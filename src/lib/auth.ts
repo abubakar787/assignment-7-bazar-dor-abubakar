@@ -6,7 +6,7 @@ import { MongoClient } from "mongodb";
 const databaseUrl = process.env.DATABASE_URL;
 const authSecret = process.env.BETTER_AUTH_SECRET;
 
-if (!databaseUrl || databaseUrl === "your-mongodb-connection-string") {
+if (!databaseUrl || databaseUrl ==="DATABASE_URL") {
   throw new Error(
     "DATABASE_URL সেট করুন। .env ফাইলে MongoDB connection string দিন।",
   );
