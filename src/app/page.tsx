@@ -1,69 +1,570 @@
-import Image from "next/image";
 
-export default function Home() {
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { fetchProducts } from "@/lib/api";
+import { signOut, useSession } from "@/lib/auth-client";
+
+type Product = {
+  id: number;
+  slug?: string;
+  emoji: string;
+  name: string;
+  unit: string;
+  price: number;
+  change: number;
+  category?: string;
+};
+
+const sampleProducts: Product[] = [
+  { id: 1, emoji: "🍚", name: "স্বর্ণমাছি চাল", unit: "প্রতি কেজি", price: 148, change: 2.1, category: "চাল" },
+  { id: 2, emoji: "🍚", name: "মিনিকেট চাল", unit: "প্রতি কেজি", price: 119, change: -1.2, category: "চাল" },
+  { id: 3, emoji: "🍚", name: "নাজিরশাইল চাল", unit: "প্রতি কেজি", price: 98, change: 0, category: "চাল" },
+  { id: 4, emoji: "🍚", name: "বাসমতি চাল", unit: "প্রতি কেজি", price: 360, change: 0.5, category: "চাল" },
+  { id: 5, emoji: "🫘", name: "মসুর ডাল", unit: "প্রতি কেজি", price: 142, change: 1.5, category: "ডাল" },
+  { id: 6, emoji: "🫘", name: "মুগ ডাল", unit: "প্রতি কেজি", price: 135, change: 0, category: "ডাল" },
+  { id: 7, emoji: "🫘", name: "ছোলা", unit: "প্রতি কেজি", price: 110, change: -1.8, category: "ডাল" },
+  { id: 8, emoji: "🫙", name: "সয়াবিন তেল", unit: "প্রতি লিটার", price: 191, change: 1.5, category: "তেল" },
+  { id: 9, emoji: "🫙", name: "পাম তেল", unit: "প্রতি লিটার", price: 166, change: -2.3, category: "তেল" },
+  { id: 10, emoji: "🥔", name: "আলু", unit: "প্রতি কেজি", price: 30, change: -2.5, category: "সবজি" },
+  { id: 11, emoji: "🧅", name: "পেঁয়াজ", unit: "প্রতি কেজি", price: 58, change: 5.2, category: "সবজি" },
+  { id: 12, emoji: "🍆", name: "বেগুন", unit: "প্রতি কেজি", price: 44, change: 4.8, category: "সবজি" },
+  { id: 13, emoji: "🌶️", name: "কাঁচামরিচ", unit: "প্রতি কেজি", price: 92, change: -4.8, category: "সবজি" },
+  { id: 14, emoji: "🧄", name: "রসুন", unit: "প্রতি কেজি", price: 125, change: -2.5, category: "সবজি" },
+  { id: 15, emoji: "🥚", name: "ডিম", unit: "প্রতি ডজন", price: 158, change: 1.2, category: "ডিম-দুধ" },
+  { id: 16, emoji: "🐟", name: "রুই মাছ", unit: "প্রতি কেজি", price: 360, change: 4, category: "মাছ" },
+  { id: 17, emoji: "🐟", name: "ইলিশ মাছ", unit: "প্রতি কেজি", price: 1850, change: 0.8, category: "মাছ" },
+  { id: 18, emoji: "🍗", name: "ব্রয়লার মুরগি", unit: "প্রতি কেজি", price: 225, change: -3, category: "মাংস" },
+  { id: 19, emoji: "🥩", name: "গরুর মাংস", unit: "প্রতি কেজি", price: 750, change: 1.2, category: "মাংস" },
+  { id: 20, emoji: "🥛", name: "দুধ", unit: "প্রতি লিটার", price: 102, change: 0, category: "ডিম-দুধ" },
+  { id: 21, emoji: "🫚", name: "আদা", unit: "প্রতি কেজি", price: 85, change: 2, category: "সবজি" },
+  { id: 22, emoji: "🥒", name: "শসা", unit: "প্রতি কেজি", price: 45, change: -1, category: "সবজি" },
+  { id: 23, emoji: "🍅", name: "টমেটো", unit: "প্রতি কেজি", price: 65, change: 0.7, category: "সবজি" },
+  { id: 24, emoji: "🥬", name: "পালং শাক", unit: "প্রতি আঁটি", price: 25, change: -1.5, category: "সবজি" },
+];
+
+const categories = ["সব", "চাল", "ডাল", "তেল", "সবজি", "মাছ", "মাংস", "ডিম-দুধ"];
+
+const categorySlugs: Record<string, string> = {
+  চাল: "chal",
+  ডাল: "dal",
+  তেল: "tel",
+  সবজি: "sobji",
+  মাছ: "mach",
+  মাংস: "mangsho",
+  "ডিম-দুধ": "dim-dui",
+};
+
+const bn = (value: number) =>
+  new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 1 }).format(value);
+
+function getEmoji(name: string): string {
+  if (/চাল|rice/i.test(name)) return "🍚";
+  if (/ডাল|lentil/i.test(name)) return "🫘";
+  if (/তেল|oil/i.test(name)) return "🫙";
+  if (/মাছ|fish/i.test(name)) return "🐟";
+  if (/মুরগি|chicken/i.test(name)) return "🍗";
+  if (/মাংস|গরু|beef|meat/i.test(name)) return "🥩";
+  if (/ডিম|egg/i.test(name)) return "🥚";
+  if (/দুধ|milk/i.test(name)) return "🥛";
+  if (/আলু|potato/i.test(name)) return "🥔";
+  if (/পেঁয়াজ|পেঁয়াজ|onion/i.test(name)) return "🧅";
+  if (/মরিচ|chilli|chili/i.test(name)) return "🌶️";
+  if (/রসুন|garlic/i.test(name)) return "🧄";
+  if (/বেগুন|eggplant/i.test(name)) return "🍆";
+  if (/টমেটো|tomato/i.test(name)) return "🍅";
+  if (/শাক|spinach/i.test(name)) return "🥬";
+  if (/শসা|cucumber/i.test(name)) return "🥒";
+  return "🛒";
+}
+
+function getCategory(name: string, original = ""): string {
+  const text = `${name} ${original}`.toLowerCase();
+
+  if (/চাল|rice/.test(text)) return "চাল";
+  if (/ডাল|lentil|pulse/.test(text)) return "ডাল";
+  if (/তেল|oil/.test(text)) return "তেল";
+  if (/মাছ|fish/.test(text)) return "মাছ";
+  if (/মাংস|মুরগি|গরু|meat|chicken|beef/.test(text)) return "মাংস";
+  if (/ডিম|দুধ|egg|milk/.test(text)) return "ডিম-দুধ";
+  if (/আলু|পেঁয়াজ|পেঁয়াজ|বেগুন|মরিচ|রসুন|আদা|শসা|টমেটো|শাক|vegetable/.test(text)) return "সবজি";
+
+  return original || "অন্যান্য";
+}
+
+function PriceTicker({ items }: { items: Product[] }) {
+  const tickerItems = [...items, ...items];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div
+      className="overflow-hidden border-y border-[#e1e9e1] bg-white py-3"
+      aria-label="বাজারদরের পরিবর্তন"
+    >
+      <div className="price-marquee flex w-max items-center gap-7">
+        {tickerItems.map((product, index) => (
+          <span
+            key={`${product.id}-${index}`}
+            className="flex shrink-0 items-center gap-2 text-xs text-[#37443a] sm:text-sm"
+          >
+            <span>{product.emoji}</span>
+            <span>{product.name}</span>
+            <span className="font-semibold">{bn(product.price)} টাকা</span>
+            <span
+              className={
+                product.change > 0
+                  ? "font-semibold text-red-600"
+                  : product.change < 0
+                    ? "font-semibold text-green-700"
+                    : "text-gray-500"
+              }
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              {product.change > 0
+                ? `▲ ${bn(product.change)}%`
+                : product.change < 0
+                  ? `▼ ${bn(Math.abs(product.change))}%`
+                  : "— ০.০%"}
+            </span>
+            <span className="ml-3 text-[#d8e1d8]">•</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProductCard({
+  product,
+  onSelect,
+}: {
+  product: Product;
+  onSelect: (product: Product) => void;
+}) {
+  const badge =
+    product.change > 0
+      ? "bg-red-50 text-red-600"
+      : product.change < 0
+        ? "bg-green-50 text-green-700"
+        : "bg-gray-100 text-gray-600";
+
+  const changeText =
+    product.change > 0
+      ? `▲ ${bn(product.change)}%`
+      : product.change < 0
+        ? `▼ ${bn(Math.abs(product.change))}%`
+        : "— ০.০%";
+
+  return (
+    <article
+      role="link"
+      tabIndex={0}
+      onClick={() => onSelect(product)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(product);
+        }
+      }}
+      className="group cursor-pointer rounded-xl border border-[#e0e9e0] bg-[#fbfdfb] p-3 transition duration-200 hover:-translate-y-0.5 hover:border-[#b8d9c0] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-600 sm:p-4"
+      aria-label={`${product.name} এর বিস্তারিত দেখুন`}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f0f5f0] text-2xl">
+          {product.emoji}
+        </div>
+        <div className="min-w-0">
+          <h3 className="truncate font-semibold text-[#253127]">{product.name}</h3>
+          <p className="mt-0.5 text-xs text-gray-500">{product.unit}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-end justify-between gap-2">
+        <div>
+          <p className="text-xs text-gray-500">আজকের দাম</p>
+          <p className="mt-0.5 text-base font-bold text-[#243127] sm:text-lg">
+            {bn(product.price)} টাকা
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+        <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold sm:text-xs ${badge}`}>
+          {changeText}
+        </span>
+      </div>
+    </article>
+  );
+}
+
+function ProductSection({
+  title,
+  icon,
+  items,
+  onSelect,
+}: {
+  title: string;
+  icon: string;
+  items: Product[];
+  onSelect: (product: Product) => void;
+}) {
+  return (
+    <section className="mt-9">
+      <h2 className="mb-4 flex items-center gap-2 text-lg font-bold sm:text-xl">
+        <span className={icon === "▲" ? "text-red-600" : "text-green-600"}>
+          {icon}
+        </span>
+        {title}
+      </h2>
+
+      {items.length === 0 ? (
+        <p className="rounded-xl border border-[#e0e9e0] bg-white p-4 text-sm text-gray-500">
+          আপাতত কোনো তথ্য নেই।
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onSelect={onSelect}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
-      </main>
-    </div>
+      )}
+    </section>
+  );
+}
+
+export default function Home() {
+  const router = useRouter();
+  const { data: session, isPending: sessionPending } = useSession();
+
+  const [products, setProducts] = useState<Product[]>(sampleProducts);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
+  const [signOutError, setSignOutError] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProducts() {
+      try {
+        const data = await fetchProducts();
+
+        if (!active) return;
+
+        if (!data.length) {
+          setApiError("API থেকে পণ্যের তালিকা পাওয়া যায়নি। নমুনা পণ্য দেখানো হচ্ছে।");
+          return;
+        }
+
+        const normalized: Product[] = data.map((item, index) => {
+          const name = item.name || `পণ্য ${index + 1}`;
+
+          return {
+            id: Number(item.id) || index + 1,
+            slug: item.slug,
+            name,
+            emoji: item.emoji || getEmoji(name),
+            unit: item.unit || "প্রতি কেজি",
+            price: Number.isFinite(Number(item.price)) ? Number(item.price) : 0,
+            change: Number.isFinite(Number(item.change)) ? Number(item.change) : 0,
+            category: getCategory(name, item.category || ""),
+          };
+        });
+
+        setProducts(normalized);
+        setApiError("");
+      } catch (error) {
+        console.error("Product API error:", error);
+
+        if (active) {
+          setApiError("API সংযোগ করা যায়নি। আপাতত নমুনা পণ্য দেখানো হচ্ছে।");
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const rising = useMemo(
+    () =>
+      [...products]
+        .filter((product) => product.change > 0)
+        .sort((a, b) => b.change - a.change)
+        .slice(0, 6),
+    [products],
+  );
+
+  const falling = useMemo(
+    () =>
+      [...products]
+        .filter((product) => product.change < 0)
+        .sort((a, b) => a.change - b.change)
+        .slice(0, 6),
+    [products],
+  );
+
+  function openProduct(product: Product) {
+    router.push(
+      `/product/${encodeURIComponent(product.slug || String(product.id))}`,
+    );
+  }
+
+  function openCategory(category: string) {
+    if (category === "সব") {
+      router.push("/");
+      return;
+    }
+
+    const slug = categorySlugs[category];
+
+    if (slug) {
+      router.push(`/category/${slug}`);
+    }
+  }
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    setSignOutError("");
+
+    try {
+      await signOut();
+      router.replace("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign Out failed:", error);
+      setSignOutError("Sign Out করা যায়নি। আবার চেষ্টা করুন।");
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
+  const avatarLetter = (
+    session?.user?.name ||
+    session?.user?.email ||
+    "U"
+  )
+    .trim()
+    .charAt(0)
+    .toUpperCase();
+
+  return (
+    <main className="min-h-screen bg-[#f0f5f0] text-[#202a22]">
+      <header className="sticky top-0 z-20 border-b border-[#e1e9e1] bg-[#fbfdfb]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <Link href="/" className="flex shrink-0 items-center gap-2">
+            <img
+              src="/logo-icon.png"
+              alt="বাজার দর লোগো"
+              className="h-10 w-10 object-contain"
+            />
+            <span>
+              <span className="block text-lg font-bold leading-tight">
+                বাজার দর
+              </span>
+              <span className="mt-1 block text-[10px] text-gray-500">
+                প্রতিদিনের বাজারদর
+              </span>
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            {sessionPending ? (
+              <div className="h-10 w-24 animate-pulse rounded-lg bg-green-50" />
+            ) : session?.user ? (
+              <>
+                <Link
+                  href="/profile"
+                  aria-label="My Profile"
+                  className="flex min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 transition hover:bg-green-50"
+                >
+                  {session.user.image ? (
+                    <img
+                      src={session.user.image}
+                      alt="Profile avatar"
+                      className="h-9 w-9 shrink-0 rounded-full border border-green-200 object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 font-bold text-green-800">
+                      {avatarLetter}
+                    </span>
+                  )}
+
+                  <span className="hidden max-w-28 truncate text-sm font-semibold text-gray-800 md:block">
+                    {session.user.name || "My Profile"}
+                  </span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60 sm:text-sm"
+                >
+                  {signingOut ? "Signing out..." : "Sign Out"}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/signin"
+                  className="rounded-lg px-3 py-2 text-xs font-medium hover:bg-green-50 sm:text-sm"
+                >
+                  Sign In
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className="rounded-lg bg-[#078b45] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#06773b] sm:px-4 sm:text-sm"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {signOutError && (
+          <p role="alert" className="mx-auto max-w-6xl px-4 pb-2 text-sm text-red-700 sm:px-6">
+            {signOutError}
+          </p>
+        )}
+
+        <nav
+          aria-label="পণ্যের ক্যাটাগরি"
+          className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pb-2 sm:justify-center sm:px-6"
+        >
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => openCategory(category)}
+              className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-green-50 hover:text-green-800"
+            >
+              {category}
+            </button>
+          ))}
+        </nav>
+
+        <PriceTicker items={products} />
+      </header>
+
+      <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
+        <section className="mt-6 grid items-center gap-5 overflow-hidden rounded-3xl border border-[#e0e9e0] bg-[#fbfdfb] px-5 py-7 sm:px-9 sm:py-9 md:grid-cols-[1.3fr_0.7fr]">
+          <div>
+            <span className="inline-block rounded-full bg-[#e0f2e5] px-3 py-1 text-xs font-medium text-[#087b3e]">
+              প্রতিদিনের বাজারদর
+            </span>
+
+            <h1 className="mt-4 max-w-xl text-2xl font-bold leading-snug sm:text-4xl">
+              আজকের বাজারের দাম এক নজরে
+            </h1>
+
+            <p className="mt-3 max-w-lg text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
+              চাল, ডাল, তেল, সবজি, মাছ, ডিম ও মাংসের দাম — বাজারের
+              প্রয়োজনীয় তথ্য, দাম বাড়া-কমার পরিবর্তন এক জায়গায়।
+            </p>
+
+            <a
+              href="#সব-পণ্য"
+              className="mt-5 inline-flex items-center rounded-lg bg-[#078b45] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#06773b]"
+            >
+              সব পণ্য দেখুন →
+            </a>
+          </div>
+
+          <div className="flex items-center justify-center p-2">
+            <img
+              src="/bazar-hero.png"
+              alt="বাজারের রঙিন ফলের ঝুড়ি"
+              className="h-auto w-full max-w-[250px] object-contain sm:max-w-[300px]"
+            />
+          </div>
+        </section>
+
+        {apiError && (
+          <p
+            role="status"
+            className="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800"
+          >
+            {apiError}
+          </p>
+        )}
+
+        {loading && (
+          <div
+            role="status"
+            className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {Array.from({ length: 3 }, (_, index) => (
+              <div
+                key={index}
+                className="h-28 animate-pulse rounded-xl border border-[#e0e9e0] bg-white"
+              />
+            ))}
+          </div>
+        )}
+
+        {!loading && (
+          <>
+            <ProductSection
+              title="আজ দাম বেড়েছে"
+              icon="▲"
+              items={rising}
+              onSelect={openProduct}
+            />
+
+            <ProductSection
+              title="আজ দাম কমেছে"
+              icon="▼"
+              items={falling}
+              onSelect={openProduct}
+            />
+          </>
+        )}
+
+        <section id="সব-পণ্য" className="mt-10 scroll-mt-44">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold sm:text-2xl">সব পণ্য</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                নিত্যপ্রয়োজনীয় পণ্যের বাজারদর
+              </p>
+            </div>
+
+            <span className="rounded-full bg-white px-3 py-1 text-xs text-gray-600">
+              মোট {bn(products.length)}টি পণ্য
+            </span>
+          </div>
+
+          {!loading && products.length === 0 && (
+            <div className="mt-5 rounded-xl border border-[#e0e9e0] bg-white p-8 text-center">
+              <p className="font-semibold">কোনো পণ্য পাওয়া যায়নি।</p>
+            </div>
+          )}
+
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onSelect={openProduct}
+              />
+            ))}
+          </div>
+        </section>
+
+        <footer className="mt-12 flex flex-col gap-3 border-t border-[#dce5dc] py-5 text-xs leading-5 text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>বাজার দর — প্রয়োজনীয় পণ্যের দাম এক নজরে।</p>
+          <p>সকল দাম সম্ভাব্য; বাজার অবস্থার ওপর নির্ভর করে পরিবর্তিত হয়।</p>
+        </footer>
+      </div>
+    </main>
   );
 }
