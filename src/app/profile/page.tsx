@@ -75,6 +75,8 @@ export default function ProfilePage() {
           <div className="p-6 sm:p-8">
             <div className="flex flex-col items-center gap-4 border-b border-gray-100 pb-7 sm:flex-row">
               {session.user.image ? (
+                
+                
                 <img
                   src={session.user.image}
                   alt="Profile avatar"
