@@ -1,4 +1,4 @@
-
+ 
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -58,7 +58,9 @@ const categorySlugs: Record<string, string> = {
 };
 
 const bn = (value: number) =>
-  new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 1 }).format(value);
+  new Intl.NumberFormat("bn-BD", {
+    maximumFractionDigits: 1,
+  }).format(value);
 
 function getEmoji(name: string): string {
   if (/চাল|rice/i.test(name)) return "🍚";
@@ -99,10 +101,10 @@ function PriceTicker({ items }: { items: Product[] }) {
 
   return (
     <div
-      className="overflow-hidden border-y border-[#e1e9e1] bg-white py-3"
+      className="overflow-hidden border-y border-[#e1e9e1] bg-white py-2 sm:py-3"
       aria-label="বাজারদরের পরিবর্তন"
     >
-      <div className="price-marquee flex w-max items-center gap-7">
+      <div className="price-marquee flex w-max items-center gap-5 sm:gap-7">
         {tickerItems.map((product, index) => (
           <span
             key={`${product.id}-${index}`}
@@ -126,7 +128,7 @@ function PriceTicker({ items }: { items: Product[] }) {
                   ? `▼ ${bn(Math.abs(product.change))}%`
                   : "— ০.০%"}
             </span>
-            <span className="ml-3 text-[#d8e1d8]">•</span>
+            <span className="ml-2 text-[#d8e1d8]">•</span>
           </span>
         ))}
       </div>
@@ -166,27 +168,29 @@ function ProductCard({
           onSelect(product);
         }
       }}
-      className="group cursor-pointer rounded-xl border border-[#e0e9e0] bg-[#fbfdfb] p-3 transition duration-200 hover:-translate-y-0.5 hover:border-[#b8d9c0] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-600 sm:p-4"
+      className="group min-w-0 cursor-pointer rounded-xl border border-[#e0e9e0] bg-[#fbfdfb] p-3 transition duration-200 hover:-translate-y-0.5 hover:border-[#b8d9c0] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-600 sm:p-4"
       aria-label={`${product.name} এর বিস্তারিত দেখুন`}
     >
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f0f5f0] text-2xl">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f0f5f0] text-xl sm:h-11 sm:w-11 sm:text-2xl">
           {product.emoji}
         </div>
-        <div className="min-w-0">
-          <h3 className="truncate font-semibold text-[#253127]">{product.name}</h3>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-sm font-semibold text-[#253127] sm:text-base">
+            {product.name}
+          </h3>
           <p className="mt-0.5 text-xs text-gray-500">{product.unit}</p>
         </div>
       </div>
 
-      <div className="mt-4 flex items-end justify-between gap-2">
-        <div>
-          <p className="text-xs text-gray-500">আজকের দাম</p>
-          <p className="mt-0.5 text-base font-bold text-[#243127] sm:text-lg">
+      <div className="mt-3 flex min-w-0 items-end justify-between gap-1.5 sm:mt-4 sm:gap-2">
+        <div className="min-w-0">
+          <p className="text-[11px] text-gray-500 sm:text-xs">আজকের দাম</p>
+          <p className="mt-0.5 text-sm font-bold text-[#243127] sm:text-lg">
             {bn(product.price)} টাকা
           </p>
         </div>
-        <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold sm:text-xs ${badge}`}>
+        <span className={`shrink-0 rounded-full px-1.5 py-1 text-[9px] font-semibold sm:px-2 sm:text-xs ${badge}`}>
           {changeText}
         </span>
       </div>
@@ -206,8 +210,8 @@ function ProductSection({
   onSelect: (product: Product) => void;
 }) {
   return (
-    <section className="mt-9">
-      <h2 className="mb-4 flex items-center gap-2 text-lg font-bold sm:text-xl">
+    <section className="mt-7 sm:mt-9">
+      <h2 className="mb-3 flex items-center gap-2 text-lg font-bold sm:mb-4 sm:text-xl">
         <span className={icon === "▲" ? "text-red-600" : "text-green-600"}>
           {icon}
         </span>
@@ -219,7 +223,7 @@ function ProductSection({
           আপাতত কোনো তথ্য নেই।
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
           {items.map((product) => (
             <ProductCard
               key={product.id}
@@ -355,43 +359,43 @@ export default function Home() {
     .toUpperCase();
 
   return (
-    <main className="min-h-screen bg-[#f0f5f0] text-[#202a22]">
+    <main className="min-h-screen overflow-x-clip bg-[#f0f5f0] text-[#202a22]">
       <header className="sticky top-0 z-20 border-b border-[#e1e9e1] bg-[#fbfdfb]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center gap-2">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
+          <Link href="/" className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
             <img
               src="/logo-icon.png"
               alt="বাজার দর লোগো"
-              className="h-10 w-10 object-contain"
+              className="h-9 w-9 object-contain sm:h-10 sm:w-10"
             />
-            <span>
-              <span className="block text-lg font-bold leading-tight">
+            <span className="min-w-0">
+              <span className="block text-base font-bold leading-tight sm:text-lg">
                 বাজার দর
               </span>
-              <span className="mt-1 block text-[10px] text-gray-500">
+              <span className="mt-1 block text-[9px] text-gray-500 sm:text-[10px]">
                 প্রতিদিনের বাজারদর
               </span>
             </span>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {sessionPending ? (
-              <div className="h-10 w-24 animate-pulse rounded-lg bg-green-50" />
+              <div className="h-9 w-16 animate-pulse rounded-lg bg-green-50 sm:h-10 sm:w-24" />
             ) : session?.user ? (
               <>
                 <Link
                   href="/profile"
                   aria-label="My Profile"
-                  className="flex min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 transition hover:bg-green-50"
+                  className="flex min-w-0 items-center gap-1.5 rounded-xl px-1.5 py-1.5 transition hover:bg-green-50 sm:gap-2 sm:px-2"
                 >
                   {session.user.image ? (
                     <img
                       src={session.user.image}
                       alt="Profile avatar"
-                      className="h-9 w-9 shrink-0 rounded-full border border-green-200 object-cover"
+                      className="h-8 w-8 shrink-0 rounded-full border border-green-200 object-cover sm:h-9 sm:w-9"
                     />
                   ) : (
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 font-bold text-green-800">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-800 sm:h-9 sm:w-9">
                       {avatarLetter}
                     </span>
                   )}
@@ -405,7 +409,7 @@ export default function Home() {
                   type="button"
                   onClick={handleSignOut}
                   disabled={signingOut}
-                  className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60 sm:text-sm"
+                  className="whitespace-nowrap rounded-lg border border-red-200 px-2 py-2 text-[11px] font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60 sm:px-3 sm:text-sm"
                 >
                   {signingOut ? "Signing out..." : "Sign Out"}
                 </button>
@@ -414,14 +418,14 @@ export default function Home() {
               <>
                 <Link
                   href="/signin"
-                  className="rounded-lg px-3 py-2 text-xs font-medium hover:bg-green-50 sm:text-sm"
+                  className="whitespace-nowrap rounded-lg px-2 py-2 text-xs font-medium hover:bg-green-50 sm:px-3 sm:text-sm"
                 >
                   Sign In
                 </Link>
 
                 <Link
                   href="/signup"
-                  className="rounded-lg bg-[#078b45] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#06773b] sm:px-4 sm:text-sm"
+                  className="whitespace-nowrap rounded-lg bg-[#078b45] px-2.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#06773b] sm:px-4 sm:text-sm"
                 >
                   Sign Up
                 </Link>
@@ -431,21 +435,24 @@ export default function Home() {
         </div>
 
         {signOutError && (
-          <p role="alert" className="mx-auto max-w-6xl px-4 pb-2 text-sm text-red-700 sm:px-6">
+          <p
+            role="alert"
+            className="mx-auto max-w-6xl px-4 pb-2 text-sm text-red-700 sm:px-6"
+          >
             {signOutError}
           </p>
         )}
 
         <nav
           aria-label="পণ্যের ক্যাটাগরি"
-          className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pb-2 sm:justify-center sm:px-6"
+          className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-1 gap-y-0.5 px-2 pb-2 sm:gap-1 sm:px-6 sm:pb-3"
         >
           {categories.map((category) => (
             <button
               key={category}
               type="button"
               onClick={() => openCategory(category)}
-              className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-green-50 hover:text-green-800"
+              className="rounded-full px-2 py-1.5 text-[11px] font-medium text-gray-600 transition hover:bg-green-50 hover:text-green-800 sm:px-3 sm:text-xs"
             >
               {category}
             </button>
@@ -455,14 +462,14 @@ export default function Home() {
         <PriceTicker items={products} />
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
-        <section className="mt-6 grid items-center gap-5 overflow-hidden rounded-3xl border border-[#e0e9e0] bg-[#fbfdfb] px-5 py-7 sm:px-9 sm:py-9 md:grid-cols-[1.3fr_0.7fr]">
-          <div>
+      <div className="mx-auto max-w-6xl px-3 pb-8 sm:px-6 sm:pb-10">
+        <section className="mt-4 grid min-w-0 items-center gap-3 overflow-hidden rounded-3xl border border-[#e0e9e0] bg-[#fbfdfb] px-4 py-5 sm:mt-6 sm:gap-5 sm:px-9 sm:py-9 md:grid-cols-[1.3fr_0.7fr]">
+          <div className="min-w-0">
             <span className="inline-block rounded-full bg-[#e0f2e5] px-3 py-1 text-xs font-medium text-[#087b3e]">
               প্রতিদিনের বাজারদর
             </span>
 
-            <h1 className="mt-4 max-w-xl text-2xl font-bold leading-snug sm:text-4xl">
+            <h1 className="mt-3 max-w-xl text-2xl font-bold leading-snug sm:mt-4 sm:text-4xl">
               আজকের বাজারের দাম এক নজরে
             </h1>
 
@@ -473,17 +480,17 @@ export default function Home() {
 
             <a
               href="#সব-পণ্য"
-              className="mt-5 inline-flex items-center rounded-lg bg-[#078b45] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#06773b]"
+              className="mt-4 inline-flex items-center rounded-lg bg-[#078b45] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#06773b] sm:mt-5 sm:px-5 sm:py-3"
             >
               সব পণ্য দেখুন →
             </a>
           </div>
 
-          <div className="flex items-center justify-center p-2">
+          <div className="flex items-center justify-center p-1 sm:p-2">
             <img
               src="/bazar-hero.png"
               alt="বাজারের রঙিন ফলের ঝুড়ি"
-              className="h-auto w-full max-w-[250px] object-contain sm:max-w-[300px]"
+              className="h-auto w-full max-w-[180px] object-contain sm:max-w-[300px]"
             />
           </div>
         </section>
@@ -500,9 +507,10 @@ export default function Home() {
         {loading && (
           <div
             role="status"
-            className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+            aria-label="পণ্য লোড হচ্ছে"
+            className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3"
           >
-            {Array.from({ length: 3 }, (_, index) => (
+            {Array.from({ length: 6 }, (_, index) => (
               <div
                 key={index}
                 className="h-28 animate-pulse rounded-xl border border-[#e0e9e0] bg-white"
@@ -529,7 +537,7 @@ export default function Home() {
           </>
         )}
 
-        <section id="সব-পণ্য" className="mt-10 scroll-mt-44">
+        <section id="সব-পণ্য" className="mt-8 scroll-mt-44 sm:mt-10">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-xl font-bold sm:text-2xl">সব পণ্য</h2>
@@ -549,7 +557,7 @@ export default function Home() {
             </div>
           )}
 
-          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid min-w-0 grid-cols-2 gap-2 sm:mt-5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard
                 key={product.id}
@@ -560,7 +568,7 @@ export default function Home() {
           </div>
         </section>
 
-        <footer className="mt-12 flex flex-col gap-3 border-t border-[#dce5dc] py-5 text-xs leading-5 text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="mt-10 flex flex-col gap-2 border-t border-[#dce5dc] py-5 text-xs leading-5 text-gray-500 sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
           <p>বাজার দর — প্রয়োজনীয় পণ্যের দাম এক নজরে।</p>
           <p>সকল দাম সম্ভাব্য; বাজার অবস্থার ওপর নির্ভর করে পরিবর্তিত হয়।</p>
         </footer>
