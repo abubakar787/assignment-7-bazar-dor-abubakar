@@ -59,7 +59,7 @@ export default function ProductDetailsPage() {
  if (isPending) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-green-50">
-      <p>Session যাচাই হচ্ছে...</p>
+      <p> Session যাচাই হচ্ছে..</p>
     </main>
   );
 }
