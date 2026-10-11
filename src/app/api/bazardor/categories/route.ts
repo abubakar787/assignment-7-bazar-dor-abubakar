@@ -1,4 +1,5 @@
 
+
 const API_URL =
   "https://api.abcz.workers.dev/api/bazardor/categories";
 
@@ -6,6 +7,7 @@ export async function GET() {
   try {
     const response = await fetch(API_URL, {
       cache: "no-store",
+      signal: AbortSignal.timeout(10000),
     });
 
     const body = await response.text();
@@ -22,7 +24,13 @@ export async function GET() {
     console.error("Categories API error:", error);
 
     return Response.json(
-      { error: "Categories API request failed" },
+      {
+        error: "Categories API request failed",
+        details:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      },
       { status: 502 },
     );
   }

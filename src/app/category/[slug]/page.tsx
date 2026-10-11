@@ -1,7 +1,7 @@
-
+ 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { fetchProducts, type ApiProduct } from "@/lib/api";
@@ -17,7 +17,7 @@ const categoryInfo: Record<string, { name: string; emoji: string }> = {
   mosla: { name: "মসলা", emoji: "🌶️" },
 };
 
-export default function CategoryPage() {
+function CategoryContent() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
 
@@ -113,7 +113,9 @@ export default function CategoryPage() {
           <>
             <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
               <div>
-                <p className="font-semibold text-green-700">বাজারদর ক্যাটাগরি</p>
+                <p className="font-semibold text-green-700">
+                  বাজারদর ক্যাটাগরি
+                </p>
                 <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
                   {category.emoji} {category.name}
                 </h1>
@@ -167,7 +169,9 @@ export default function CategoryPage() {
             ) : categoryProducts.length === 0 ? (
               <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
                 <div className="text-5xl">🛍️</div>
-                <h2 className="mt-4 text-xl font-bold">কোনো পণ্য পাওয়া যায়নি</h2>
+                <h2 className="mt-4 text-xl font-bold">
+                  কোনো পণ্য পাওয়া যায়নি
+                </h2>
                 <p className="mt-2 text-gray-500">
                   এই ক্যাটাগরিতে বর্তমানে কোনো পণ্যের তথ্য নেই।
                 </p>
@@ -205,7 +209,9 @@ export default function CategoryPage() {
                       {product.name}
                     </h2>
 
-                    <p className="mt-1 text-sm text-gray-500">{product.unit}</p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {product.unit}
+                    </p>
 
                     <p className="mt-4 text-2xl font-extrabold text-green-700">
                       ৳{product.price.toLocaleString("bn-BD")}
@@ -222,5 +228,31 @@ export default function CategoryPage() {
         )}
       </section>
     </main>
+  );
+}
+
+function CategoryLoading() {
+  return (
+    <main className="min-h-screen bg-green-50 p-4 sm:p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-48 animate-pulse rounded-2xl bg-white shadow-sm"
+            />
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function CategoryPage() {
+  return (
+    <Suspense fallback={<CategoryLoading />}>
+      <CategoryContent />
+    </Suspense>
   );
 }

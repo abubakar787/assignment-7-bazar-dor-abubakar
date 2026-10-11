@@ -1,10 +1,13 @@
- const API_URL =
+
+
+const API_URL =
   "https://api.abcz.workers.dev/api/bazardor/products";
 
 export async function GET() {
   try {
     const response = await fetch(API_URL, {
       cache: "no-store",
+      signal: AbortSignal.timeout(10000),
     });
 
     const body = await response.text();

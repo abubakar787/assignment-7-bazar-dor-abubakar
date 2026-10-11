@@ -1,8 +1,9 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { fetchProducts, type ApiProduct } from "@/lib/api";
 
@@ -11,8 +12,12 @@ const bn = (value: number) =>
     maximumFractionDigits: 1,
   }).format(value);
 
-export default function ProductDetailsPage() {
-  const params = useParams<{ id: string }>();
+export default function ProductDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
@@ -32,20 +37,28 @@ export default function ProductDetailsPage() {
 
     async function loadProduct() {
       try {
+        setLoading(true);
+        setError("");
+
         const products = await fetchProducts();
 
         const found = products.find(
-          (item) =>
-            item.slug === params.id ||
-            String(item.id) === params.id
+          (item) => item.slug === id || String(item.id) === id
         );
 
-        if (!cancelled) setProduct(found ?? null);
+        if (!cancelled) {
+          setProduct(found ?? null);
+        }
       } catch (err) {
-        console.error(err);
-        if (!cancelled) setError("পণ্যের তথ্য লোড করা যায়নি।");
+        console.error("Product loading error:", err);
+
+        if (!cancelled) {
+          setError("পণ্যের তথ্য লোড করা যায়নি।");
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -54,35 +67,33 @@ export default function ProductDetailsPage() {
     return () => {
       cancelled = true;
     };
-  }, [isPending, session, router, params.id]);
+  }, [id, isPending, session, router]);
 
- if (isPending) {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-green-50">
-      <p> Session যাচাই হচ্ছে..</p>
-    </main>
-  );
-}
+  if (isPending) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-green-50">
+        <p>সেশন যাচাই হচ্ছে...</p>
+      </main>
+    );
+  }
 
-if (!session) {
-  return null;
-}
+  if (!session) return null;
 
   if (loading) {
     return (
-      <main className="p-10 text-center">
-        পণ্যের তথ্য লোড হচ্ছে...
+      <main className="flex min-h-screen items-center justify-center bg-green-50">
+        <p>পণ্যের তথ্য লোড হচ্ছে...</p>
       </main>
     );
   }
 
   if (error || !product) {
     return (
-      <main className="p-10 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-green-50 p-10 text-center">
         <h1 className="text-xl font-bold">
           {error || "পণ্য পাওয়া যায়নি"}
         </h1>
-        <Link href="/" className="mt-4 inline-block text-green-700">
+        <Link href="/" className="font-semibold text-green-700">
           হোমপেজে ফিরুন
         </Link>
       </main>
@@ -93,6 +104,14 @@ if (!session) {
     (market) => market.min > 0 && market.max > 0
   );
 
+  const minimumPrice = markets.length
+    ? Math.min(...markets.map((market) => market.min))
+    : product.price;
+
+  const maximumPrice = markets.length
+    ? Math.max(...markets.map((market) => market.max))
+    : product.price;
+
   return (
     <main className="min-h-screen bg-[#f0f5f0] px-4 py-10 text-gray-800">
       <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-sm sm:p-10">
@@ -101,14 +120,12 @@ if (!session) {
         </Link>
 
         <div className="mt-6 flex items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-green-50 text-5xl">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-green-50 text-5xl">
             {product.emoji}
           </div>
 
           <div>
-            <p className="text-sm text-green-700">
-              {product.categoryName}
-            </p>
+            <p className="text-sm text-green-700">{product.categoryName}</p>
             <h1 className="text-2xl font-bold">{product.name}</h1>
             <p className="text-sm text-gray-500">{product.unit}</p>
           </div>
@@ -143,22 +160,14 @@ if (!session) {
           <div className="rounded-xl border p-4">
             <p className="text-sm text-gray-500">সর্বনিম্ন দাম</p>
             <p className="mt-2 text-xl font-bold">
-              {bn(
-                markets.length
-                  ? Math.min(...markets.map((market) => market.min))
-                  : product.price
-              )} টাকা
+              {bn(minimumPrice)} টাকা
             </p>
           </div>
 
           <div className="rounded-xl border p-4">
             <p className="text-sm text-gray-500">সর্বোচ্চ দাম</p>
             <p className="mt-2 text-xl font-bold">
-              {bn(
-                markets.length
-                  ? Math.max(...markets.map((market) => market.max))
-                  : product.price
-              )} টাকা
+              {bn(maximumPrice)} টাকা
             </p>
           </div>
 
@@ -187,7 +196,6 @@ if (!session) {
                   <th className="p-3">সর্বোচ্চ</th>
                 </tr>
               </thead>
-
               <tbody>
                 {markets.map((market, index) => (
                   <tr
