@@ -25,8 +25,7 @@ export default function NotFound() {
         <Link
           href="/"
           className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-6 py-3 font-semibold text-white transition hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
-        >
-          ← হোম পেজে ফিরে যান
+        >           ← হোম পেজে ফিরে যান
         </Link>
       </div>
     </main>

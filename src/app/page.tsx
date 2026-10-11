@@ -404,7 +404,7 @@ export default function Home() {
                     {session.user.name || "My Profile"}
                   </span>
                 </Link>
-
+  
                 <button
                   type="button"
                   onClick={handleSignOut}
@@ -414,6 +414,7 @@ export default function Home() {
                   {signingOut ? "Signing out..." : "Sign Out"}
                 </button>
               </>
+              
             ) : (
               <>
                 <Link
