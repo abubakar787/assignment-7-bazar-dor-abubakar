@@ -1,6 +1,7 @@
  
 import type { Metadata } from "next";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "বাজার দর | প্রতিদিনের বাজারের দাম",
@@ -15,7 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="bn">
-      <body>{children}</body>
+      <body>
+  {children}
+  <Toaster position="top-right" richColors closeButton />
+</body>
     </html>
   );
 }
