@@ -8,7 +8,7 @@ const authSecret = process.env.BETTER_AUTH_SECRET;
 
 if (!databaseUrl || databaseUrl ==="DATABASE_URL") {
   throw new Error(
-    "DATABASE_URL সেট করুন। .env ফাইলে MongoDB connection string দিন।",
+    process.env.DATABASE_URL
   );
 }
 
@@ -17,7 +17,7 @@ if (
   authSecret === "replace-with-a-long-random-secret"
 ) {
   throw new Error(
-    "BETTER_AUTH_SECRET সেট করুন। .env ফাইলে secure secret দিন।",
+     process.env.BETTER_AUTH_SECRET
   );
 }
 
