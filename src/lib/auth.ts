@@ -8,7 +8,7 @@ const authSecret = process.env.BETTER_AUTH_SECRET;
 
 if (!databaseUrl || databaseUrl ==="DATABASE_URL") {
   throw new Error(
-    process.env.DATABASE_URL
+     
   );
 }
 
