@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useEffect, useState } from "react";
@@ -71,7 +70,7 @@ export default function ProductDetailsPage({
 
   if (isPending) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-green-50">
+      <main className="flex min-h-screen items-center justify-center bg-[#f0f5f0]">
         <p>সেশন যাচাই হচ্ছে...</p>
       </main>
     );
@@ -81,7 +80,7 @@ export default function ProductDetailsPage({
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-green-50">
+      <main className="flex min-h-screen items-center justify-center bg-[#f0f5f0]">
         <p>পণ্যের তথ্য লোড হচ্ছে...</p>
       </main>
     );
@@ -89,11 +88,11 @@ export default function ProductDetailsPage({
 
   if (error || !product) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-green-50 p-10 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#f0f5f0] p-10 text-center">
         <h1 className="text-xl font-bold">
           {error || "পণ্য পাওয়া যায়নি"}
         </h1>
-        <Link href="/" className="font-semibold text-green-700">
+        <Link href="/" className="font-semibold text-[#087b3e]">
           হোমপেজে ফিরুন
         </Link>
       </main>
@@ -113,110 +112,130 @@ export default function ProductDetailsPage({
     : product.price;
 
   return (
-    <main className="min-h-screen bg-[#f0f5f0] px-4 py-10 text-gray-800">
-      <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-sm sm:p-10">
-        <Link href="/" className="text-sm font-semibold text-green-800">
-          ← হোমপেজে ফিরে যান
-        </Link>
+    <main className="min-h-screen bg-[#f0f5f0] text-[#202a22]">
+      <header className="border-b border-[#e1e9e1] bg-[#fbfdfb]">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <Link href="/" className="flex items-center gap-2">
+            <img
+              src="/logo-icon.png"
+              alt="বাজার দর লোগো"
+              className="h-9 w-9 object-contain sm:h-10 sm:w-10"
+            />
+            <span className="text-base font-bold sm:text-lg">বাজার দর</span>
+          </Link>
 
-        <div className="mt-6 flex items-center gap-4">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-green-50 text-5xl">
-            {product.emoji}
-          </div>
-
-          <div>
-            <p className="text-sm text-green-700">{product.categoryName}</p>
-            <h1 className="text-2xl font-bold">{product.name}</h1>
-            <p className="text-sm text-gray-500">{product.unit}</p>
-          </div>
-        </div>
-
-        <section className="mt-8 rounded-2xl bg-green-50 p-5">
-          <p className="text-sm text-gray-600">আজকের দাম</p>
-          <p className="mt-1 text-3xl font-bold text-green-800">
-            {bn(product.price)} টাকা
-          </p>
-          <p
-            className={
-              product.change > 0
-                ? "mt-2 text-sm text-red-600"
-                : product.change < 0
-                  ? "mt-2 text-sm text-green-700"
-                  : "mt-2 text-sm text-gray-500"
-            }
+          <Link
+            href="/"
+            className="rounded-lg border border-[#e0e9e0] px-3 py-2 text-sm font-semibold text-[#087b3e] transition hover:bg-[#f0f5f0] sm:px-4"
           >
-            {product.change > 0
-              ? "▲ দাম বেড়েছে "
-              : product.change < 0
-                ? "▼ দাম কমেছে "
-                : "দামের পরিবর্তন নেই "}
-            {bn(Math.abs(product.change))}%
-          </p>
-        </section>
+            ← হোম পেজ
+          </Link>
+        </div>
+      </header>
 
-        <h2 className="mt-8 text-lg font-bold">বাজারদরের সারাংশ</h2>
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+        <div className="rounded-3xl border border-[#e0e9e0] bg-white p-6 shadow-sm sm:p-10">
+          <div className="flex items-center gap-4">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#f0f5f0] text-5xl">
+              {product.emoji}
+            </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border p-4">
-            <p className="text-sm text-gray-500">সর্বনিম্ন দাম</p>
-            <p className="mt-2 text-xl font-bold">
-              {bn(minimumPrice)} টাকা
-            </p>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#087b3e]">
+                {product.categoryName}
+              </p>
+              <h1 className="text-2xl font-bold">{product.name}</h1>
+              <p className="text-sm text-gray-500">{product.unit}</p>
+            </div>
           </div>
 
-          <div className="rounded-xl border p-4">
-            <p className="text-sm text-gray-500">সর্বোচ্চ দাম</p>
-            <p className="mt-2 text-xl font-bold">
-              {bn(maximumPrice)} টাকা
-            </p>
-          </div>
-
-          <div className="rounded-xl border p-4">
-            <p className="text-sm text-gray-500">আজকের দাম</p>
-            <p className="mt-2 text-xl font-bold">
+          <section className="mt-8 rounded-2xl bg-[#f0f5f0] p-5">
+            <p className="text-sm text-gray-600">আজকের দাম</p>
+            <p className="mt-1 text-3xl font-bold text-[#087b3e]">
               {bn(product.price)} টাকা
             </p>
+            <p
+              className={
+                product.change > 0
+                  ? "mt-2 text-sm text-red-600"
+                  : product.change < 0
+                    ? "mt-2 text-sm text-green-700"
+                    : "mt-2 text-sm text-gray-500"
+              }
+            >
+              {product.change > 0
+                ? "▲ দাম বেড়েছে "
+                : product.change < 0
+                  ? "▼ দাম কমেছে "
+                  : "দামের পরিবর্তন নেই "}
+              {bn(Math.abs(product.change))}%
+            </p>
+          </section>
+
+          <h2 className="mt-8 text-lg font-bold">বাজারদরের সারাংশ</h2>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-[#e0e9e0] p-4">
+              <p className="text-sm text-gray-500">সর্বনিম্ন দাম</p>
+              <p className="mt-2 text-xl font-bold">
+                {bn(minimumPrice)} টাকা
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-[#e0e9e0] p-4">
+              <p className="text-sm text-gray-500">সর্বোচ্চ দাম</p>
+              <p className="mt-2 text-xl font-bold">
+                {bn(maximumPrice)} টাকা
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-[#e0e9e0] p-4">
+              <p className="text-sm text-gray-500">আজকের দাম</p>
+              <p className="mt-2 text-xl font-bold">
+                {bn(product.price)} টাকা
+              </p>
+            </div>
           </div>
-        </div>
 
-        <h2 className="mt-8 text-lg font-bold">বিভিন্ন বাজারের দাম</h2>
+          <h2 className="mt-8 text-lg font-bold">বিভিন্ন বাজারের দাম</h2>
 
-        {markets.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">
-            বাজারভিত্তিক তথ্য পাওয়া যায়নি।
-          </p>
-        ) : (
-          <div className="mt-4 overflow-x-auto rounded-xl border">
-            <table className="w-full min-w-[480px] text-left text-sm">
-              <thead className="bg-green-50">
-                <tr>
-                  <th className="p-3">বাজার</th>
-                  <th className="p-3">বিভাগ</th>
-                  <th className="p-3">সর্বনিম্ন</th>
-                  <th className="p-3">সর্বোচ্চ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {markets.map((market, index) => (
-                  <tr
-                    key={`${market.market}-${market.division}-${index}`}
-                    className="border-t"
-                  >
-                    <td className="p-3">{market.market}</td>
-                    <td className="p-3">{market.division}</td>
-                    <td className="p-3">{bn(market.min)} টাকা</td>
-                    <td className="p-3">{bn(market.max)} টাকা</td>
+          {markets.length === 0 ? (
+            <p className="mt-3 text-sm text-gray-500">
+              বাজারভিত্তিক তথ্য পাওয়া যায়নি।
+            </p>
+          ) : (
+            <div className="mt-4 overflow-x-auto rounded-xl border border-[#e0e9e0]">
+              <table className="w-full min-w-[480px] text-left text-sm">
+                <thead className="bg-[#f0f5f0]">
+                  <tr>
+                    <th className="p-3">বাজার</th>
+                    <th className="p-3">বিভাগ</th>
+                    <th className="p-3">সর্বনিম্ন</th>
+                    <th className="p-3">সর্বোচ্চ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {markets.map((market, index) => (
+                    <tr
+                      key={`${market.market}-${market.division}-${index}`}
+                      className="border-t border-[#e8efe8]"
+                    >
+                      <td className="p-3">{market.market}</td>
+                      <td className="p-3">{market.division}</td>
+                      <td className="p-3">{bn(market.min)} টাকা</td>
+                      <td className="p-3">{bn(market.max)} টাকা</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-        <p className="mt-6 text-xs leading-5 text-gray-500">
-          প্রদর্শিত দাম API থেকে পাওয়া তথ্যের ভিত্তিতে দেখানো হয়েছে।
-          সর্বশেষ আপডেটের সময় API প্রদানকারীর ওপর নির্ভরশীল।
-        </p>
+          <p className="mt-6 text-xs leading-5 text-gray-500">
+            প্রদর্শিত দাম API থেকে পাওয়া তথ্যের ভিত্তিতে দেখানো হয়েছে।
+            সর্বশেষ আপডেটের সময় API প্রদানকারীর ওপর নির্ভরশীল।
+          </p>
+        </div>
       </div>
     </main>
   );

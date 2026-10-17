@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { fetchProducts } from "@/lib/api";
+import { fetchCategories, fetchProducts } from "@/lib/api";
 import { signOut, useSession } from "@/lib/auth-client";
 
 type Product = {
@@ -45,18 +45,17 @@ const sampleProducts: Product[] = [
   { id: 24, emoji: "🥬", name: "পালং শাক", unit: "প্রতি আঁটি", price: 25, change: -1.5, category: "সবজি" },
 ];
 
-const categories = ["সব", "চাল", "ডাল", "তেল", "সবজি", "মাছ", "মাংস", "ডিম-দুধ", "মসলা"];
-
-const categorySlugs: Record<string, string> = {
-  চাল: "chal",
-  ডাল: "dal",
-  তেল: "tel",
-  সবজি: "sobji",
-  মাছ: "mach",
-  মাংস: "mangsho",
-  "ডিম-দুধ": "dim-dui",
-  মসলা: "mosla",
-};
+const fallbackCategories: { label: string; slug: string | null }[] = [
+  { label: "সব", slug: null },
+  { label: "চাল", slug: "chal" },
+  { label: "ডাল", slug: "dal" },
+  { label: "তেল", slug: "tel" },
+  { label: "সবজি", slug: "sobji" },
+  { label: "মাছ", slug: "mach" },
+  { label: "মাংস", slug: "mangsho" },
+  { label: "ডিম-দুধ", slug: "dim-dui" },
+  { label: "মসলা", slug: "mosla" },
+];
 
 const bn = (value: number) =>
   new Intl.NumberFormat("bn-BD", {
@@ -244,6 +243,7 @@ export default function Home() {
   const { data: session, isPending: sessionPending } = useSession();
 
   const [products, setProducts] = useState<Product[]>(sampleProducts);
+  const [navCategories, setNavCategories] = useState(fallbackCategories);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState("");
   const [signOutError, setSignOutError] = useState("");
@@ -251,6 +251,24 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
+
+    async function loadCategories() {
+      try {
+        const data = await fetchCategories();
+
+        if (!active || !data.length) return;
+
+        setNavCategories([
+          { label: "সব", slug: null },
+          ...data.map((category) => ({
+            label: category.name,
+            slug: category.slug,
+          })),
+        ]);
+      } catch (error) {
+        console.error("Category API error:", error);
+      }
+    }
 
     async function loadProducts() {
       try {
@@ -292,6 +310,7 @@ export default function Home() {
     }
 
     loadProducts();
+    loadCategories();
 
     return () => {
       active = false;
@@ -322,17 +341,13 @@ export default function Home() {
     );
   }
 
-  function openCategory(category: string) {
-    if (category === "সব") {
+  function openCategory(slug: string | null) {
+    if (!slug) {
       router.push("/");
       return;
     }
 
-    const slug = categorySlugs[category];
-
-    if (slug) {
-      router.push(`/category/${slug}`);
-    }
+    router.push(`/category/${slug}`);
   }
 
   async function handleSignOut() {
@@ -450,14 +465,14 @@ export default function Home() {
           aria-label="পণ্যের ক্যাটাগরি"
           className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-1 gap-y-0.5 px-2 pb-2 sm:gap-1 sm:px-6 sm:pb-3"
         >
-          {categories.map((category) => (
+          {navCategories.map((category) => (
             <button
-              key={category}
+              key={category.slug ?? "all"}
               type="button"
-              onClick={() => openCategory(category)}
+              onClick={() => openCategory(category.slug)}
               className="rounded-full px-2 py-1.5 text-[11px] font-medium text-gray-600 transition hover:bg-green-50 hover:text-green-800 sm:px-3 sm:text-xs"
             >
-              {category}
+              {category.label}
             </button>
           ))}
         </nav>

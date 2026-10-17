@@ -86,7 +86,21 @@ export async function fetchProducts(): Promise<ApiProduct[]> {
   }));
 }
 
-export async function fetchCategories(): Promise<unknown[]> {
+export type ApiCategory = {
+  slug: string;
+  name: string;
+  emoji: string;
+};
+
+type RawCategory = {
+  id?: string;
+  slug?: string;
+  nameBn?: string;
+  name?: string;
+  icon?: string;
+};
+
+export async function fetchCategories(): Promise<ApiCategory[]> {
   const response = await fetch(`${API_BASE}/categories`, {
     cache: "no-store",
   });
@@ -96,5 +110,16 @@ export async function fetchCategories(): Promise<unknown[]> {
   }
 
   const data: unknown = await response.json();
-  return Array.isArray(data) ? data : [];
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return (data as RawCategory[])
+    .map((item) => ({
+      slug: item.slug ?? item.id ?? "",
+      name: item.nameBn ?? item.name ?? "",
+      emoji: item.icon ?? "🛒",
+    }))
+    .filter((item) => item.slug !== "");
 }
