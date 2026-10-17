@@ -6,9 +6,9 @@ import { MongoClient } from "mongodb";
 const databaseUrl = process.env.DATABASE_URL;
 const authSecret = process.env.BETTER_AUTH_SECRET;
 
-if (!databaseUrl || databaseUrl ==="DATABASE_URL") {
+if (!databaseUrl || databaseUrl === "DATABASE_URL") {
   throw new Error(
-     
+    "DATABASE_URL is missing or set to a placeholder. Add a valid MongoDB connection string to the environment variables.",
   );
 }
 
@@ -17,7 +17,7 @@ if (
   authSecret === "replace-with-a-long-random-secret"
 ) {
   throw new Error(
-     process.env.BETTER_AUTH_SECRET
+    "BETTER_AUTH_SECRET is missing or set to a placeholder. Generate a long random secret and add it to the environment variables.",
   );
 }
 

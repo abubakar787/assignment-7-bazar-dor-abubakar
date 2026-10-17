@@ -45,7 +45,7 @@ const sampleProducts: Product[] = [
   { id: 24, emoji: "🥬", name: "পালং শাক", unit: "প্রতি আঁটি", price: 25, change: -1.5, category: "সবজি" },
 ];
 
-const categories = ["সব", "চাল", "ডাল", "তেল", "সবজি", "মাছ", "মাংস", "ডিম-দুধ"];
+const categories = ["সব", "চাল", "ডাল", "তেল", "সবজি", "মাছ", "মাংস", "ডিম-দুধ", "মসলা"];
 
 const categorySlugs: Record<string, string> = {
   চাল: "chal",
@@ -55,6 +55,7 @@ const categorySlugs: Record<string, string> = {
   মাছ: "mach",
   মাংস: "mangsho",
   "ডিম-দুধ": "dim-dui",
+  মসলা: "mosla",
 };
 
 const bn = (value: number) =>
@@ -91,6 +92,7 @@ function getCategory(name: string, original = ""): string {
   if (/মাছ|fish/.test(text)) return "মাছ";
   if (/মাংস|মুরগি|গরু|meat|chicken|beef/.test(text)) return "মাংস";
   if (/ডিম|দুধ|egg|milk/.test(text)) return "ডিম-দুধ";
+  if (/মসলা|গুঁড়া|গুড়া|রসুন|আদা|ধনেপাতা|spice/.test(text)) return "মসলা";
   if (/আলু|পেঁয়াজ|পেঁয়াজ|বেগুন|মরিচ|রসুন|আদা|শসা|টমেটো|শাক|vegetable/.test(text)) return "সবজি";
 
   return original || "অন্যান্য";

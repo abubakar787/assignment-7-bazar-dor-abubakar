@@ -1,4 +1,3 @@
- 
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
@@ -10,22 +9,42 @@ export default function UpdateProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [saving, setSaving] = useState(false);
-
   useEffect(() => {
     if (!isPending && !session) {
       router.replace("/signin");
     }
   }, [isPending, session, router]);
 
-  useEffect(() => {
-    if (session?.user) {
-      setName(session.user.name || "");
-    }
-  }, [session]);
+  if (isPending || !session) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
+        <p className="text-gray-600">Loading...</p>
+      </main>
+    );
+  }
+
+  return (
+    <UpdateProfileForm
+      key={session.user.id ?? session.user.email}
+      initialName={session.user.name ?? ""}
+      email={session.user.email}
+    />
+  );
+}
+
+function UpdateProfileForm({
+  initialName,
+  email,
+}: {
+  initialName: string;
+  email: string;
+}) {
+  const router = useRouter();
+
+  const [name, setName] = useState(initialName);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function handleUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,14 +79,6 @@ export default function UpdateProfilePage() {
     } finally {
       setSaving(false);
     }
-  }
-
-  if (isPending || !session) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-gray-600">Loading...</p>
-      </main>
-    );
   }
 
   return (
@@ -121,7 +132,7 @@ export default function UpdateProfilePage() {
               </label>
               <input
                 type="email"
-                value={session.user.email}
+                value={email}
                 readOnly
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500"
               />

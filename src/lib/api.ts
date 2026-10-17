@@ -1,5 +1,13 @@
 const API_BASE = "/api/bazardor";
 
+const UNIT_LABELS: Record<string, string> = {
+  kg: "প্রতি কেজি",
+  litre: "প্রতি লিটার",
+  liter: "প্রতি লিটার",
+  dozen: "প্রতি ডজন",
+  piece: "প্রতি পিস",
+};
+
 export type ApiProduct = {
   id: number;
   slug: string;
@@ -62,11 +70,9 @@ export async function fetchProducts(): Promise<ApiProduct[]> {
     emoji: item.image ?? "🛒",
     name: item.nameBn ?? item.name ?? `পণ্য ${index + 1}`,
     unit:
-      item.unit === "kg"
-        ? "প্রতি কেজি"
-        : item.unit === "liter"
-          ? "প্রতি লিটার"
-          : item.unit ?? "প্রতি কেজি",
+      (item.unit ? UNIT_LABELS[item.unit] : undefined) ??
+      item.unit ??
+      "প্রতি কেজি",
     price: item.today ?? 0,
     change: item.change?.pct ?? 0,
     category: item.category ?? "",
